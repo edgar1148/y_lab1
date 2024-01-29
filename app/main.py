@@ -1,14 +1,16 @@
 from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
-from crud import (
+
+from app.models import Base
+from app.database import SessionLocal, engine
+
+from app.crud import (
     create_menu, create_submenu, create_dish,
     get_all_menus, get_menu, get_all_submenus, get_submenu, get_all_dishes, get_dishes,
     update_menu, update_submenu, update_dish,
     delete_menu, delete_submenu, delete_dish,
     partial_update_menu, partial_update_submenu, partial_update_dish
 )
-from models import Base
 from pydantic import BaseModel
 
 app = FastAPI()

@@ -1,0 +1,36 @@
+version: "3.10-slim"
+
+services:
+  
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    networks:
+      - ylab_network
+  
+  testdb:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: testdb
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpassword
+    networks:
+      - ylab_network
+
+  testapp:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    depends_on:
+      - testdb
+    networks:
+      - ylab_network
+
+networks:
+  ylab_network:
+    driver: bridge
