@@ -13,9 +13,14 @@ services:
       - .env
     networks:
       - ylab_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000//api/v1/menus/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   db:
-    image: postgres:15-alpine
+    image: postgres:15.1-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -24,6 +29,11 @@ services:
       - "5432:5432"
     networks:
       - ylab_network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   ylab_network:

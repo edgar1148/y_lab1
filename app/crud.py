@@ -3,6 +3,8 @@ from app.models import Menu, Submenu, Dish
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql import func
 
 Base = declarative_base()
 
@@ -239,3 +241,34 @@ def partial_update_dish(db: Session, dish_id: str, updated_data: dict):
     Частично обновляет данные о конкретном блюде в базе данных.
     """
     return partial_update_object(db, Dish, dish_id, updated_data)
+
+
+def get_menu_complex(db: Session, menu_id: str):
+    """
+    Получает данные о конкретном меню из базы данных, используя сложный ORM-запрос.
+
+    :param db: Сессия базы данных.
+    :param menu_id: Идентификатор меню.
+    :return: Данные о меню.
+    """
+    menu_data = (
+        db.query(Menu.id, Menu.title, Menu.description)
+        .add_column(func.count(Submenu.id).label("submenus_count"))
+        .add_column(func.sum(func.count(Dish.id)).label("dishes_count"))
+        .outerjoin(Submenu)
+        .outerjoin(Dish, Submenu.id == Dish.submenu_id)
+        .filter(Menu.id == menu_id)
+        .group_by(Menu.id)
+        .first()
+    )
+
+    if menu_data:
+        return {
+            "id": menu_data.id,
+            "title": menu_data.title,
+            "description": menu_data.description,
+            "submenus_count": menu_data.submenus_count or 0,
+            "dishes_count": menu_data.dishes_count or 0,
+        }
+    else:
+        return None
